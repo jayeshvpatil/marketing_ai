@@ -1,0 +1,9 @@
+streamlit==1.30.0
+pandas
+plotly
+pandasai
+langchain
+langchain_experimental
+langchain_openai
+tabulate
+openai
