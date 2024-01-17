@@ -13,16 +13,17 @@ def generate_insights(df):
     response = client.chat.completions.create(temperature= 0.2,
 model=MODEL_NAME, messages=messages, stream=False
     )
-    st.write(response.choices[0].message.content)
+    st.markdown(response.choices[0].message.content)
    
     
 def prepare_prompt(df,column_names):
     prompt_content = f"""
-            You are a marketing analyst and you are required to summarize the key insights of given numerical tables.
+            You are a marketing analyst and you are required to create advanced summarized the key insights of given dataframe.
            {df}
             Please list important, but no more than five, highlights in the given table. Use calculated metrics to justify the higlights.
+            Include all essential information, key concepts, which should be bolded with asterisks.
             Please write in a professional and business-neutral tone.
-            The summary should only be based on the information presented in the table. 
+            Strictly base your notes on the provided information, without adding any external information. The output should be in markdown format.
             """
     messages = [
                 {

@@ -4,7 +4,10 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from utils import llm2, llm
-
+import streamlit_shadcn_ui as ui
+import pygwalker as pyg
+import streamlit.components.v1 as components
+from pygwalker.api.streamlit import init_streamlit_comm, get_streamlit_html
 # Set page config
 
 def set_page_config():
@@ -47,11 +50,18 @@ def calculate_kpis(data: pd.DataFrame) -> List[float]:
 
 def display_kpi_metrics(kpis: List[float], kpi_names: List[str]):
     st.header("KPI Metrics")
-    for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(5), zip(kpi_names, kpis))):
-        col.metric(label=kpi_name, value=kpi_value)
+    kpi_counts = len(kpi_names)
+    cols = st.columns(kpi_counts)
+    for i, (col, (kpi_name, kpi_value)) in enumerate(zip(cols, zip(kpi_names, kpis))):
+        #col.metric(label=kpi_name, value=kpi_value)
+        with cols[i]:
+            ui.metric_card(title=kpi_name, content=kpi_value, description="+20.1% from last month")
+
+
 
 
 def display_sidebar(data: pd.DataFrame) -> Tuple[List[str], List[str], List[str]]:
+    st.sidebar.image('assets/further-logo.png')
     st.sidebar.header("Filters")
     start_date = pd.Timestamp(st.sidebar.date_input("Start Date", data['date'].min().date()))
     end_date = pd.Timestamp(st.sidebar.date_input("End Date", data['date'].max().date()))
@@ -61,8 +71,14 @@ def display_sidebar(data: pd.DataFrame) -> Tuple[List[str], List[str], List[str]
     selected_medium = st.sidebar.multiselect("Select Medium", medium)
     campaign = sorted(data['campaign'].unique())
     selected_campaign = st.sidebar.multiselect("Select Campaign", campaign)
+
     return start_date, end_date,selected_source, selected_medium, selected_campaign
 
+@st.cache_resource
+def get_pyg_html(df: pd.DataFrame) -> str:
+    # When you need to publish your application, you need set `debug=False`,prevent other users to write your config file.
+    html = get_streamlit_html(df, use_kernel_calc=True, debug=False)
+    return html
 
 def main():
     set_page_config()
@@ -77,7 +93,7 @@ def main():
     filtered_data = filter_data(filtered_data, 'campaign', selected_campaign)
 
     # Create tabs
-    tab_titles = ['Dashboard', 'Weekly Insights', 'Q&A', 'Detect']
+    tab_titles = ['Dashboard', 'Insights', 'Q&A', 'Detect','Analyze']
     tabs = st.tabs(tab_titles)
     
     # Add content to the Data Preprocessing tab
@@ -89,12 +105,10 @@ def main():
     
     # Add content to the Model Training tab
     with tabs[1]:
-        st.header('Weekly Insights')
         llm.generate_insights(filtered_data)
     
     # Add content to the Model Evaluation tab
     with tabs[2]:
-        st.header('Q&A')
         question_list = [
         'Which campaign had the highest Click-Through Rate (CTR)? Why might that be the case?',
         'Which campaign achieved the highest Conversion Rate? What factors could contribute to this?',
@@ -114,8 +128,11 @@ def main():
     
     # Add content to the Results Visualization tab
     with tabs[3]:
-        st.header('Detect')
         st.write('This is where you can detect anamolies')
+    with tabs[4]:
+        # Initialize pygwalker communication
+        init_streamlit_comm()
+        components.html(get_pyg_html(filtered_data), width=1000, height=1000, scrolling=True)
 
 if __name__ == '__main__':
     main()

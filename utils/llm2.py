@@ -4,7 +4,7 @@ from openai import OpenAI
 import re
 
 client = OpenAI()
-MODEL_NAME = "gpt-3.5-turbo"
+MODEL_NAME = "gpt-4"
 
 # Generate LLM response
 def generate_response(df, input_query):
@@ -13,8 +13,8 @@ def generate_response(df, input_query):
     response = client.chat.completions.create(
 model=MODEL_NAME, messages=messages, stream=False
     )
-    st.write(response.choices[0].message.content)
-    
+    with st.expander("Code Block", expanded=False):
+        st.write(response.choices[0].message.content)
     code_blocks = re.findall(r"```(python)?(.*?)```", response.choices[0].message.content, re.DOTALL)
     # Strip leading and trailing whitespace and join the code blocks
     code = "\n".join([block[1].strip() for block in code_blocks])
@@ -31,12 +31,10 @@ model=MODEL_NAME, messages=messages, stream=False
             st.warning(
                 """
                 📟 Check the error message and the code executed above to investigate further.
-
                 Pro tips:
                 - Tweak your prompts to overcome the error 
-                - Use the words 'Plot'/ 'Subplot'
                 - Use simpler, concise words
-                - Remember, I'm specialized in displaying charts not in conveying information about the dataset
+                - Remember, I'm specialized in conveying information about the dataset. Give me context of your question and I can answer better.
             """
             )
     else:
@@ -53,7 +51,7 @@ def prepare_prompt(input_query, column_names):
             1. Check if columns that are supposed to be numeric are recognized as such. If not, attempt to convert them.
             2. Handle NaN values by filling with mean or median.
             
-            Use package Pandas and Matplotlib ONLY.
+            Use package Pandas and Matplotlib ONLY. Make sure you import the packages.
             Provide SINGLE CODE BLOCK with a solution using Pandas and Matplotlib plots in a single figure to address the following query:
             
             {input_query}
