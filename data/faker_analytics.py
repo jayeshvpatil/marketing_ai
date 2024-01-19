@@ -39,4 +39,4 @@ columns = ['date', 'source', 'medium', 'campaign', 'cost', 'impressions', 'click
 df = pd.DataFrame(data, columns=columns)
 
 # Save DataFrame to CSV
-df.to_csv('generated_analytics_data.csv', index=False)
+df.to_csv('data/generated_analytics_data.csv', index=False)

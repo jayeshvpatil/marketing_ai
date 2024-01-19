@@ -38,7 +38,6 @@ model=MODEL_NAME, messages=messages, stream=False
             """
             )
     else:
-        st.write(response_text)
         st.success("Done")
     
 def prepare_prompt(input_query, column_names):

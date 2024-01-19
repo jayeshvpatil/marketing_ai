@@ -1,11 +1,10 @@
-from typing import List, Tuple
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from utils import  llm_gcp_q_a_chat,llm_gcp_insights
+from utils import data_loader,llm_gcp_insights
 import streamlit_shadcn_ui as ui
-
+from typing import List, Tuple
+from anamolies import model
 # Set page config
 
 def set_page_config():
@@ -17,27 +16,6 @@ def set_page_config():
     )
     st.markdown("<style> footer {visibility: hidden;} </style>", unsafe_allow_html=True)
 
-
-@st.cache_data
-def load_data() -> pd.DataFrame:
-    data = pd.read_csv('generated_analytics_data.csv')
-    data['date'] = pd.to_datetime(data['date'])
-    return data
-
-
-def filter_data(data: pd.DataFrame, column: str, values: List[str]) -> pd.DataFrame:
-    if not values:
-        return data
-    # Check if the column is a date type, then filter a range
-    if pd.api.types.is_datetime64_any_dtype(data[column]):
-        # Convert values to datetime objects
-        start_date, end_date = pd.to_datetime(values, errors='coerce')
-        # Filter data within the date range
-        filtered_data = data[data[column].between(start_date, end_date, inclusive='both')]
-    else:
-        # For non-date columns, use isin
-        filtered_data = data[data[column].isin(values)]
-    return filtered_data
 
 
 @st.cache_data
@@ -85,18 +63,18 @@ def display_sidebar(data: pd.DataFrame) -> Tuple[List[str], List[str], List[str]
 
 def main():
     set_page_config()
-    st.title("Marketing Campaign AI")
-    data = load_data()
+    st.title("GoFurther.AI")
+    data = data_loader.load()
     start_date, end_date,selected_source, selected_medium, selected_campaign = display_sidebar(data)
     
     filtered_data = data.copy()
-    filtered_data = filter_data(filtered_data, 'date', [start_date, end_date])
-    filtered_data = filter_data(filtered_data, 'source', selected_source)
-    filtered_data = filter_data(filtered_data, 'medium', selected_medium)
-    filtered_data = filter_data(filtered_data, 'campaign', selected_campaign)
+    filtered_data = data_loader.filter(filtered_data, 'date', [start_date, end_date])
+    filtered_data = data_loader.filter(filtered_data, 'source', selected_source)
+    filtered_data = data_loader.filter(filtered_data, 'medium', selected_medium)
+    filtered_data = data_loader.filter(filtered_data, 'campaign', selected_campaign)
 
     # Create tabs
-    tab_titles = ['Data', 'Insights', 'Q&A', 'Detect','Analyze']
+    tab_titles = ['Data', 'Insights', 'Detect']
     tabs = st.tabs(tab_titles)
     
     # Add content to the Data Preprocessing tab
@@ -110,12 +88,12 @@ def main():
     with tabs[1]:
         llm_gcp_insights.generate_insights(filtered_data)
     
-    # Add content to the Model Evaluation tab
-    llm_gcp_q_a_chat.start_chat(filtered_data)
-    
     # Add content to the Results Visualization tab
-    with tabs[3]:
-        st.write('This is where you can detect anamolies')
+    with tabs[2]:
+        tab1, tab2 = st.tabs(["📈 Chart", "🗃 Data"])
+        model.train_model()
+
+        tab2.subheader("A tab with the data")
 
 if __name__ == '__main__':
     main()

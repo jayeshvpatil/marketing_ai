@@ -12,6 +12,6 @@ pygwalker
 faker
 google-cloud-aiplatform
 streamlit_chat
-langchain-google-vertexai
 langchain-core
 streamlit_extras
+scikit-learn

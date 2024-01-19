@@ -4,3 +4,4 @@ venv/
 .streamlit/
 .vscode
 .DS_Store
+utils/__pycache__/*
