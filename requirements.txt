@@ -10,3 +10,8 @@ openai
 streamlit_shadcn_ui
 pygwalker
 faker
+google-cloud-aiplatform
+streamlit_chat
+langchain-google-vertexai
+langchain-core
+streamlit_extras
