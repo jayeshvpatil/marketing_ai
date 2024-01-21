@@ -102,7 +102,7 @@ def start_chat(df):
     # Initialise session state variables
     if 'messages' not in st.session_state:
         st.session_state['messages'] = []
-    clear_button = st.button("Clear Conversation", key="clear")
+    clear_button = st.sidebar.button("Clear Conversation", key="clear")
 
     # Reset conversation
     if clear_button:

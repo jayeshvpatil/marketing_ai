@@ -4,19 +4,7 @@ import streamlit as st
 from utils import data_loader,llm_gcp_insights
 import streamlit_shadcn_ui as ui
 from typing import List, Tuple
-from anamolies import model
-# Set page config
-
-def set_page_config():
-    st.set_page_config(
-        page_title="Campaign Dashboard",
-        page_icon=":bar_chart:",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
-    st.markdown("<style> footer {visibility: hidden;} </style>", unsafe_allow_html=True)
-
-
+from anomalies import model, app
 
 @st.cache_data
 def calculate_kpis(data: pd.DataFrame) -> List[float]:
@@ -62,7 +50,6 @@ def display_sidebar(data: pd.DataFrame) -> Tuple[List[str], List[str], List[str]
     return start_date, end_date,selected_source, selected_medium, selected_campaign
 
 def main():
-    set_page_config()
     st.title("GoFurther.AI")
     data = data_loader.load()
     start_date, end_date,selected_source, selected_medium, selected_campaign = display_sidebar(data)
@@ -90,10 +77,8 @@ def main():
     
     # Add content to the Results Visualization tab
     with tabs[2]:
-        tab1, tab2 = st.tabs(["📈 Chart", "🗃 Data"])
         model.train_model()
-
-        tab2.subheader("A tab with the data")
+        app.display_anomalies()
 
 if __name__ == '__main__':
     main()

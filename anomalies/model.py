@@ -26,5 +26,5 @@ def train_model():
             df['scores']=model.decision_function(features)
             df['anomaly'] = model.predict(features)
             time.sleep(3)
-            df.to_csv('anamolies/updated_anamolies.csv')
+            df.to_csv('anomalies/updated_anomalies.csv')
             print(df.head())

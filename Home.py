@@ -3,13 +3,15 @@ import plotly.express as px
 import streamlit as st
 from utils import data_loader,llm_gcp_insights
 import streamlit_shadcn_ui as ui
+import PIL
 
 # Set page config
 
 def set_page_config():
+    img = PIL.Image.open('assets/genai.png')
     st.set_page_config(
         page_title="Campaign Dashboard",
-        page_icon=":bar_chart:",
+        page_icon=img,
         layout="wide",
         initial_sidebar_state="expanded",
     )
@@ -17,11 +19,10 @@ def set_page_config():
 
 set_page_config()
 
-st.image("assets/further-logo.png")   
-st.title('Marketing AI wizard')
-st.markdown("""
- [Langchain Demo Repo](https://github.com/jayeshvpatil/langchain-demo)
-            """)
+st.image("assets/further-logo.png",width=350)   
+st.title('Marketing AI wizard') 
+
+
 # Sidebar
 st.sidebar.header("About")
 st.sidebar.markdown(
