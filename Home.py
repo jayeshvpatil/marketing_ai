@@ -4,8 +4,17 @@ import streamlit as st
 from utils import data_loader,llm_gcp_insights
 import streamlit_shadcn_ui as ui
 import PIL
+from google.oauth2 import service_account
+import vertexai
 
+PROJECT_ID = 'dce-gcp-training' # @param {type:"string"}
+LOCATION = 'us-central1'  # @param {type:"string"}
 # Set page config
+def init_vertex():
+    credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcs_connections"]
+)
+    vertexai.init(project=PROJECT_ID, location=LOCATION, credentials=credentials)
 
 def set_page_config():
     img = PIL.Image.open('assets/genai.png')
