@@ -11,14 +11,18 @@ import PIL
 
 #st.title("Go Further AI chat")
 def prepare_simple_prompt(query, df):
+    column_names = ",".join(df.columns)
+    today = datetime.today()
     prompt_content = f"""
             You are a marketing analyst and you are required to create advanced summarized insights of given dataframe to answer users questions.
-           {df}
+            Today's date is {today}.
             Please answer to users question based on the information the given dataframe. Use calculated metrics to justify the answer.
             Include all essential information.
             Please write in a professional and business-neutral tone. Make it short and concise. Be specific and answer the user {query}
             Strictly base your notes on the provided information, without adding any external information. The output should be in markdown format.
+            Use only this data as reference : {df}
             """
+    #st.write(prompt_content)
     return prompt_content    
 
 def prepare_prompt(query, df):
@@ -53,14 +57,13 @@ def ask_follow_up(answer):
     the Chief Marketing Officer (CMO) could ask based on the provided response:
     {answer}
     The questions should be short and precise. Only create 3 questions. 
-    Don't suggest the same questions again and again.
+    Don't suggest the same questions again and again. Remove any unterminated string literal.
     Example output format = ['q1','q2','q3']. 
     """
     return prompt_content
 
-def click_follow_up_button(q, output):
+def click_follow_up_button(q):
     st.session_state.follow_up_clicked_q= q
-    st.session_state['messages'].append({"role": "ai", "content": output})
 
 def extract_code(code_text):
     code_blocks = re.findall(r"```(python)?(.*?)```", code_text, re.DOTALL)
@@ -129,12 +132,15 @@ def start_chat(df):
         output = exec_code(df, response)
         followup_prompt = ask_follow_up(response)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
-        followup_q_list = ast.literal_eval(followup_q)
         with st.chat_message("ai", avatar=avatar_img):
-            st.markdown(output)
             st.session_state['messages'].append({"role": "ai", "content": response})
-            if followup_q_list and len(followup_q_list) > 0:
-                for q in (followup_q_list):
-                    st.button(q, on_click=click_follow_up_button, args=[q, response])
+            try:
+                followup_q_list = ast.literal_eval(followup_q)
+                if followup_q_list and len(followup_q_list) > 0:
+                    for q in (followup_q_list):
+                        st.button(q, on_click=click_follow_up_button, args=[q])
+            except (SyntaxError, ValueError) as e:
+                print(f"Error: {e}")
+
          
 
