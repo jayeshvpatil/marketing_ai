@@ -6,6 +6,7 @@ import sys
 from utils import vertexai
 from io import StringIO
 from datetime import datetime
+import markdown
 
 st.title("Go Further AI chat")
 
@@ -45,8 +46,9 @@ def ask_follow_up(answer):
     """
     return prompt_content
 
-def click_follow_up_button(q):
+def click_follow_up_button(q, output):
     st.session_state.follow_up_clicked_q= q
+    st.session_state['messages'].append({"role": "assistant", "content": output})
 
 def extract_code(code_text):
     code_blocks = re.findall(r"```(python)?(.*?)```", code_text, re.DOTALL)
@@ -62,7 +64,7 @@ def exec_code(df, code_response):
             sys.stdout = StringIO()
             exec(code)
             output = sys.stdout.getvalue()
-            return output
+            return markdown.markdown(output)
         except Exception as e:
             error_message = str(e)
             st.error(
@@ -111,14 +113,12 @@ def start_chat(df):
             final_prompt = prepare_prompt(prompt, df)
         response = vertexai.generate_text(final_prompt,stream=False)
         output = exec_code(df, response)
-        st.write(output)
         st.session_state['messages'].append({"role": "assistant", "content": output})
         followup_prompt = ask_follow_up(response)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
         followup_q_list = ast.literal_eval(followup_q)
         with st.chat_message("assistant"):
-            st.session_state['messages'].append({"role": "assistant", "content": output})
             for q in (followup_q_list):
-                st.button(q, on_click=click_follow_up_button, args=[q])
+                st.button(q, on_click=click_follow_up_button, args=[q, output])
          
 

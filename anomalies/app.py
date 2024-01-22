@@ -55,7 +55,7 @@ def display_anomalies():
     # Add a radio button for severity level selection
     severity_level = st.radio("Select Severity Level", ('Low', 'Medium', 'High'), index=2)
     # Show anomalies
-    st.subheader('Detected Anomalies')
+    st.subheader('Top 5 Detected Anomalies')
     anomalies = init_anamolies()
     if severity_level:
         filtered_anomalies = filter_anomalies(anomalies,severity_level)
