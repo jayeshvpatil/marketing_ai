@@ -7,6 +7,7 @@ from utils import vertexai
 from io import StringIO
 from datetime import datetime
 import markdown
+import PIL
 
 st.title("Go Further AI chat")
 
@@ -43,15 +44,13 @@ def ask_follow_up(answer):
     {answer}
     The questions should be short and precise. Only create 3 questions. 
     Don't suggest the same questions again and again.
-    Final output format should be ["q1","q2","q3]. 
-    If you are not able to generate questions on previous answer,
-    don't just write questions as q1, q2 and q3, Use the dataframe `df` to create questions
+    Example output format = ['q1','q2','q3']. 
     """
     return prompt_content
 
 def click_follow_up_button(q, output):
     st.session_state.follow_up_clicked_q= q
-    st.session_state['messages'].append({"role": "assistant", "content": output})
+    st.session_state['messages'].append({"role": "ai", "content": output})
 
 def extract_code(code_text):
     code_blocks = re.findall(r"```(python)?(.*?)```", code_text, re.DOTALL)
@@ -86,6 +85,7 @@ def exec_code(df, code_response):
         st.write(code_response) 
 
 def start_chat(df):
+    avatar_img = PIL.Image.open('assets/logo_avatar.png')
     # Initialise session state variables
     if 'messages' not in st.session_state:
         st.session_state['messages'] = []
@@ -104,7 +104,8 @@ def start_chat(df):
     for message in st.session_state['messages']:
         role = message["role"]
         content = message["content"]
-        with st.chat_message(role):
+        avatar = avatar_img if role=='ai' else None
+        with st.chat_message(role, avatar=avatar):
             st.markdown(content)
     # Chat input
     (user_input := st.chat_input("Ask anything:")) or (user_input_from_session := st.session_state.get("follow_up_clicked_q"))
@@ -119,9 +120,9 @@ def start_chat(df):
         followup_prompt = ask_follow_up(response)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
         followup_q_list = ast.literal_eval(followup_q)
-        with st.chat_message("assistant"):
-            #st.markdown(output)
-            st.session_state['messages'].append({"role": "assistant", "content": output})
+        with st.chat_message("ai", avatar=avatar_img):
+            st.markdown(output)
+            st.session_state['messages'].append({"role": "ai", "content": output})
             if followup_q_list and len(followup_q_list) > 0:
                 for q in (followup_q_list):
                     st.button(q, on_click=click_follow_up_button, args=[q, output])
