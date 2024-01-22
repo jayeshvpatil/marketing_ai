@@ -24,6 +24,7 @@ def get_model_config():
 
 @st.cache_resource
 def get_model():
+     init_vertex()
      model = GenerativeModel(MODEL_NAME)
      return model
 
