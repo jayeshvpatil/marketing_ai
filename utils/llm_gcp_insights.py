@@ -1,26 +1,14 @@
 import streamlit as st
 import pandas as pd
 import re
-import vertexai
-from vertexai.preview.generative_models import GenerativeModel, Part
-
-MODEL_NAME = "gemini-pro"
-model = GenerativeModel(MODEL_NAME)
-
-def generation_config():
-    return  {
-        "max_output_tokens": 1024,
-        "temperature": 0.2,
-        "top_p": 0.95,
-        "top_k": 40
-    }
+from utils import vertexai
 
 
 # Generate LLM response
 def generate_insights(df):
     column_names = ",".join(df.columns)
     messages= prepare_prompt(df,column_names)
-    responses = model.generate_content(messages,generation_config=generation_config(), stream=False)
+    responses = vertexai.generate_text(messages, stream=False)
     st.markdown(responses.text)
    
     

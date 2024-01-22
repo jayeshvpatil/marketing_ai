@@ -1,23 +1,11 @@
 import streamlit as st
 import pandas as pd
 import re
-import vertexai
-from vertexai.preview.generative_models import GenerativeModel
 import ast
 import sys
-
-MODEL_NAME = "gemini-pro"
-model = GenerativeModel(MODEL_NAME)
+from utils import vertexai
 
 st.title("Go Further AI chat")
-
-def generation_config():
-    return  {
-        "max_output_tokens": 2048,
-        "temperature": 0,
-        "top_p": 0.95,
-        "top_k": 40
-    }
 
 def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
@@ -36,23 +24,7 @@ def prepare_prompt(query, df):
     7. Do not explain or comment the code. Wrap up the code in a single code block. 
     8.The DataFrame has columns: {column_names} . Use only these columns for analysis.
                 """
-    st.write(prompt_content)
     return prompt_content
-
-def generate_response(prompt):
-    responses = model.generate_content(
-            prompt,
-            generation_config=generation_config(),
-            stream=True
-        )
-    final_response = []
-    for response in responses:
-        try:
-            final_response.append(response.candidates[0].content.parts[0].text)
-        except IndexError:
-            final_response.append("")
-            continue
-    return " ".join(final_response)
 
 def ask_follow_up(answer):
     prompt_content = f"""
@@ -127,10 +99,10 @@ def start_chat(df):
         with st.chat_message("user"):
             st.markdown(prompt)
             final_prompt = prepare_prompt(prompt, df)
-        response = generate_response(final_prompt)
+        response = vertexai.generate_text(final_prompt,stream=False)
         exec_code(df, response)
         followup_prompt = ask_follow_up(response)
-        followup_q = generate_response(followup_prompt)
+        followup_q = vertexai.generate_text(followup_prompt,stream=False)
         followup_q_list = ast.literal_eval(followup_q)
         st.session_state['messages'].append({"role": "assistant", "content": response})
         with st.chat_message("assistant"):
