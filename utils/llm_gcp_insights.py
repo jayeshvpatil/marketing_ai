@@ -9,7 +9,7 @@ def generate_insights(df):
     column_names = ",".join(df.columns)
     messages= prepare_prompt(df,column_names)
     responses = vertexai.generate_text(messages, stream=False)
-    st.markdown(responses.text)
+    st.markdown(responses)
    
     
 def prepare_prompt(df,column_names):

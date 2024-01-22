@@ -1,7 +1,6 @@
 cache/
 pandasai.log
 venv/
-.streamlit/
 .vscode
 .DS_Store
 utils/__pycache__/*

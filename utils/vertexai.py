@@ -28,7 +28,6 @@ def get_model():
      model = GenerativeModel(MODEL_NAME)
      return model
 
-
 def generate_text(prompt, stream=False):
     model = get_model()
     responses = model.generate_content(
