@@ -1,21 +1,7 @@
 import streamlit as st
 import pandas as pd
-import re
-import vertexai
-from vertexai.preview.generative_models import GenerativeModel, Part
 import time
-
-MODEL_NAME = "gemini-pro"
-model = GenerativeModel(MODEL_NAME)
-
-def generation_config():
-    return  {
-        "max_output_tokens": 1024,
-        "temperature": 0.2,
-        "top_p": 0.95,
-        "top_k": 40
-    }
-
+from utils import vertexai
 
 
 def init_anamolies():
@@ -50,11 +36,16 @@ def filter_anomalies(anomalies, severity_level):
 def explain_anomalies(anomalies):
 # Explain anomalies (provide additional insights or context)
     for index, row in anomalies.iterrows():
-        prompt = f"Explain the anomaly in campaign '{row['campaign']}'. Look at the severity score and other features to explain your finding. Make sure your response is accurate, concise and in one line. Include all the relevant features and make final answer in professional and business tone"
-        response = model.generate_content(prompt,generation_config=generation_config(), stream=False)
-        explanation = response.candidates[0].content.parts[0].text
+        prompt = f"""Explain the anomaly in campaign '{row['campaign']}'. 
+        Look at the severity score and other features to explain your finding. 
+        Make sure your response is accurate, concise and in one line. 
+        Include all the relevant features and make final answer in professional and business tone.
+        Here's the data: '{row}'
+        """
+        explanation = vertexai.generate_text(prompt, stream=False)
+        #explanation = response.candidates[0].content.parts[0].text
         #st.toast(explanation)
-        anomalies['explanation']=explanation
+        anomalies.at[index,'explanation']=explanation
         time.sleep(2)
     st.dataframe(anomalies)
 

@@ -4,25 +4,33 @@ import re
 import ast
 import sys
 from utils import vertexai
+from io import StringIO
+from datetime import datetime
 
 st.title("Go Further AI chat")
 
 def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
+    today = datetime.today()
     prompt_content = f"""
-    You are a marketing analyst assisting the CMO in analyzing a pandas DataFrame named df. 
-    Your goal is to answer business questions using Python. 
-    The question asked by the CMO : {query}.
-    The dataset is ALREADY loaded into a DataFrame named 'df'. DO NOT load the data again.
-    Complete the following tasks:
-    1. Check if numeric columns are recognized as such; convert them if necessary.
-    2. Handle NaN values by filling with mean or median. Pay special attention to dates and retrieve dates within the desired time.
-    3. Convert all time formats to datetime format; dates should not support sum operations.
-    4. Avoid naming variables with duplicate names and use the format string .2f to output numbers.
-    5. Ensure the Python code is properly indented.
-    6. Use a single code block for the solution. Don't add unnecessary spaces.
-    7. Do not explain or comment the code. Wrap up the code in a single code block. 
-    8.The DataFrame has columns: {column_names} . Use only these columns for analysis.
+    "You are a marketing analyst assisting the CMO in analyzing a pandas DataFrame named df. 
+Your goal is to answer business questions using Python. 
+The question asked by the CMO: {query}.
+The dataset is ALREADY loaded into a DataFrame named 'df'. DO NOT load the data again.
+Complete the following tasks:
+1. Check if numeric columns are recognized as such; convert the numeric columns to numeric before calculations.
+2. Handle NaN values by filling with mean or median. Pay special attention to dates and retrieve dates within the desired time.
+Today's date is {today}.
+Fix a numeric column that has non-numeric values with the errors='coerce' parameter, which replaces any non-numeric values with NaN.
+3. Convert all time formats to datetime format; dates should not support sum operations.
+4. Avoid naming variables with duplicate names and use the format string .2f to output numbers.
+5. Ensure the Python code is properly indented.
+6. Use a single code block for the solution. Don't add unnecessary spaces.
+7. Do not explain or comment the code. Wrap up the code in a single code block. 
+8. The DataFrame has columns: {column_names}. Use only these columns for analysis.
+9. time_on_site is in seconds. satisfaction_score and feedback_score are in range 1 to 5
+9. Output as st.write in business tone with calculated stats"
+
                 """
     return prompt_content
 
@@ -50,9 +58,11 @@ def exec_code(df, code_response):
     code = extract_code(code_response)
     if code:
         try:
+            original_stdout = sys.stdout
+            sys.stdout = StringIO()
             exec(code)
             output = sys.stdout.getvalue()
-            st.write(output)
+            return output
         except Exception as e:
             error_message = str(e)
             st.error(
@@ -100,13 +110,14 @@ def start_chat(df):
             st.markdown(prompt)
             final_prompt = prepare_prompt(prompt, df)
         response = vertexai.generate_text(final_prompt,stream=False)
-        exec_code(df, response)
+        output = exec_code(df, response)
+        st.write(output)
+        st.session_state['messages'].append({"role": "assistant", "content": output})
         followup_prompt = ask_follow_up(response)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
         followup_q_list = ast.literal_eval(followup_q)
-        st.session_state['messages'].append({"role": "assistant", "content": response})
         with st.chat_message("assistant"):
-            st.markdown(response)
+            st.session_state['messages'].append({"role": "assistant", "content": output})
             for q in (followup_q_list):
                 st.button(q, on_click=click_follow_up_button, args=[q])
          

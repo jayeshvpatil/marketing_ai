@@ -2,6 +2,9 @@ import vertexai
 from google.oauth2 import service_account
 import streamlit as st
 from vertexai.preview.generative_models import GenerativeModel
+from langchain_experimental.agents import create_csv_agent
+from langchain.chat_models.vertexai import ChatVertexAI
+from langchain.agents.agent_types import AgentType
 
 PROJECT_ID = 'dce-gcp-training' # @param {type:"string"}
 LOCATION = 'us-central1'  # @param {type:"string"}
@@ -46,3 +49,4 @@ def generate_text(prompt, stream=False):
         return " ".join(final_response)
     else:
         return responses.text
+    

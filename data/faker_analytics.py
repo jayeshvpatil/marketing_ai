@@ -23,9 +23,9 @@ for _ in range(500):  # Number of records
     clicks = fake.random_int(3, 9000)
     users = fake.random_int(2, 1000)
     revenue = round(random.uniform(2, 1000), 2)
-    conversion_rate = f"{fake.random_int(1, 30)}%"
-    bounce_rate = f"{fake.random_int(5, 25)}%"
-    time_on_site = f"{fake.random_int(1, 10)}m {fake.random_int(1, 59)}s"
+    conversion_rate = f"{fake.random_int(1, 30)}"
+    bounce_rate = f"{fake.random_int(5, 25)}"
+    time_on_site = f"{fake.random_int(30, 480)}"
     device_type = fake.random_element(elements=('Desktop', 'Mobile'))
     browser = fake.random_element(elements=('Chrome', 'Safari', 'Firefox'))
     satisfaction_score = random.choice([1,2,3,4, 5])  # Assuming CSAT score ranges from 1 to 5
