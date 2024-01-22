@@ -14,7 +14,7 @@ def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
     today = datetime.today()
     prompt_content = f"""
-    "You are a marketing analyst assisting the CMO in analyzing a pandas DataFrame named df. 
+    You are a marketing analyst assisting the CMO in analyzing a pandas DataFrame named df. 
 Your goal is to answer business questions using Python. 
 The question asked by the CMO: {query}.
 The dataset is ALREADY loaded into a DataFrame named 'df'. DO NOT load the data again.
@@ -30,7 +30,8 @@ Fix a numeric column that has non-numeric values with the errors='coerce' parame
 7. Do not explain or comment the code. Wrap up the code in a single code block. 
 8. The DataFrame has columns: {column_names}. Use only these columns for analysis.
 9. time_on_site is in seconds. satisfaction_score and feedback_score are in range 1 to 5
-9. Output as st.write in business tone with calculated stats"
+10. Output as st.write in business tone with calculated stats. Don't make up answers. Use facts in the dataframe df.
+11. Add try catch blocks to catch errors and respond error in business neutral tones
 
                 """
     return prompt_content
@@ -42,7 +43,9 @@ def ask_follow_up(answer):
     {answer}
     The questions should be short and precise. Only create 3 questions. 
     Don't suggest the same questions again and again.
-    Final output format should be ["q1","q2","q3]
+    Final output format should be ["q1","q2","q3]. 
+    If you are not able to generate questions on previous answer,
+    don't just write questions as q1, q2 and q3, Use the dataframe `df` to create questions
     """
     return prompt_content
 
@@ -113,11 +116,12 @@ def start_chat(df):
             final_prompt = prepare_prompt(prompt, df)
         response = vertexai.generate_text(final_prompt,stream=False)
         output = exec_code(df, response)
-        st.session_state['messages'].append({"role": "assistant", "content": output})
         followup_prompt = ask_follow_up(response)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
         followup_q_list = ast.literal_eval(followup_q)
         with st.chat_message("assistant"):
+            #st.markdown(output)
+            st.session_state['messages'].append({"role": "assistant", "content": output})
             for q in (followup_q_list):
                 st.button(q, on_click=click_follow_up_button, args=[q, output])
          
