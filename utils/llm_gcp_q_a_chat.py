@@ -10,6 +10,16 @@ import markdown
 import PIL
 
 #st.title("Go Further AI chat")
+def prepare_simple_prompt(query, df):
+    prompt_content = f"""
+            You are a marketing analyst and you are required to create advanced summarized insights of given dataframe to answer users questions.
+           {df}
+            Please answer to users question based on the information the given dataframe. Use calculated metrics to justify the answer.
+            Include all essential information.
+            Please write in a professional and business-neutral tone. Make it short and concise. Be specific and answer the user {query}
+            Strictly base your notes on the provided information, without adding any external information. The output should be in markdown format.
+            """
+    return prompt_content    
 
 def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
@@ -114,7 +124,7 @@ def start_chat(df):
         st.session_state['messages'].append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-            final_prompt = prepare_prompt(prompt, df)
+            final_prompt = prepare_simple_prompt(prompt, df)
         response = vertexai.generate_text(final_prompt,stream=False)
         output = exec_code(df, response)
         followup_prompt = ask_follow_up(response)
@@ -122,9 +132,9 @@ def start_chat(df):
         followup_q_list = ast.literal_eval(followup_q)
         with st.chat_message("ai", avatar=avatar_img):
             st.markdown(output)
-            st.session_state['messages'].append({"role": "ai", "content": output})
+            st.session_state['messages'].append({"role": "ai", "content": response})
             if followup_q_list and len(followup_q_list) > 0:
                 for q in (followup_q_list):
-                    st.button(q, on_click=click_follow_up_button, args=[q, output])
+                    st.button(q, on_click=click_follow_up_button, args=[q, response])
          
 
