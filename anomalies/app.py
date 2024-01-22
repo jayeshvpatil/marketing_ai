@@ -51,7 +51,7 @@ def explain_anomalies(anomalies):
 
 def display_anomalies():
         # Streamlit app
-    st.title('Marketing Anomaly Detection')
+    st.title('Anomaly Detection')
     # Add a radio button for severity level selection
     severity_level = st.radio("Select Severity Level", ('Low', 'Medium', 'High'), index=2)
     # Show anomalies

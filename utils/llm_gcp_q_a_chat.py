@@ -122,7 +122,8 @@ def start_chat(df):
         with st.chat_message("assistant"):
             #st.markdown(output)
             st.session_state['messages'].append({"role": "assistant", "content": output})
-            for q in (followup_q_list):
-                st.button(q, on_click=click_follow_up_button, args=[q, output])
+            if followup_q_list and len(followup_q_list) > 0:
+                for q in (followup_q_list):
+                    st.button(q, on_click=click_follow_up_button, args=[q, output])
          
 
