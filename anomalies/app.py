@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 from utils import vertexai
+import streamlit_shadcn_ui as ui
 
 
 def init_anamolies():
@@ -62,5 +63,5 @@ def display_anomalies():
     explained_anomalies = explain_anomalies(filtered_anomalies)
     columns_order = ['explanation', 'severity', 'anomaly_scores', 'source', 'medium', 'campaign', 'cost', 'impressions', 'clicks', 'users', 'revenue', 'conversion_rate', 'bounce_rate', 'time_on_site', 'device_type', 'browser', 'satisfaction_score', 'feedback_score']
     explained_anomalies.set_index('date', inplace=True,drop=False) #hide the row_numbers
-    st.write(explained_anomalies[columns_order])
+    ui.table(data = explained_anomalies[columns_order], maxHeight=300)
 
