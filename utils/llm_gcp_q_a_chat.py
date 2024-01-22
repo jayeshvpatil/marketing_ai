@@ -9,7 +9,7 @@ from datetime import datetime
 import markdown
 import PIL
 
-st.title("Go Further AI chat")
+#st.title("Go Further AI chat")
 
 def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
