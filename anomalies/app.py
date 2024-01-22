@@ -47,7 +47,7 @@ def explain_anomalies(anomalies):
         #st.toast(explanation)
         anomalies.at[index,'explanation']=explanation
         time.sleep(2)
-    st.dataframe(anomalies)
+    return anomalies
 
 def display_anomalies():
         # Streamlit app
@@ -59,4 +59,8 @@ def display_anomalies():
     anomalies = init_anamolies()
     if severity_level:
         filtered_anomalies = filter_anomalies(anomalies,severity_level)
-    explain_anomalies(filtered_anomalies)
+    explained_anomalies = explain_anomalies(filtered_anomalies)
+    columns_order = ['explanation', 'severity', 'anomaly_scores', 'source', 'medium', 'campaign', 'cost', 'impressions', 'clicks', 'users', 'revenue', 'conversion_rate', 'bounce_rate', 'time_on_site', 'device_type', 'browser', 'satisfaction_score', 'feedback_score']
+    explained_anomalies.set_index('date', inplace=True,drop=False) #hide the row_numbers
+    st.write(explained_anomalies[columns_order])
+

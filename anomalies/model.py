@@ -37,7 +37,7 @@ def train_model():
 
                 st.write("Predicting Anomalies...")
                 # Predict anomalies (1 for normal, -1 for anomaly)
-                df['scores'] = model.decision_function(features)
+                df['anomaly_scores'] = model.decision_function(features)
                 df['anomaly'] = model.predict(features)
                 time.sleep(3)
                 st.success("Anomalies predicted.")
