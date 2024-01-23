@@ -13,14 +13,18 @@ import PIL
 def prepare_simple_prompt(query, df):
     column_names = ",".join(df.columns)
     today = datetime.today()
+    df_string = df.head(10).to_string()
     prompt_content = f"""
-            You are a marketing analyst and you are required to create advanced summarized insights of given dataframe to answer users questions.
-            Today's date is {today}.
-            Please answer to users question based on the information the given dataframe. Use calculated metrics to justify the answer.
-            Include all essential information.
-            Please write in a professional and business-neutral tone. Make it short and concise. Be specific and answer the user {query}
-            Strictly base your notes on the provided information, without adding any external information. The output should be in markdown format.
-            Use only this data as reference : {df}
+            You are a marketing analyst and you are required to answer business questions and summarize the key insights of given numerical tables. 
+            The dataframe has following columns :
+            {column_names}  
+
+            Please answer the following business question based on the data in the table : {query}
+
+            Please write in a professional and business-neutral tone. Note that Today's date is {today}
+            The answer should only be based on the information presented in the table.
+            {df_string}   
+            
             """
     #st.write(prompt_content)
     return prompt_content    
@@ -29,36 +33,46 @@ def prepare_prompt(query, df):
     column_names = ",".join(df.columns)
     today = datetime.today()
     prompt_content = f"""
-    You are a marketing analyst assisting the CMO in analyzing a pandas DataFrame named df. 
-Your goal is to answer business questions using Python. 
-The question asked by the CMO: {query}.
-The dataset is ALREADY loaded into a DataFrame named 'df'. DO NOT load the data again.
-Complete the following tasks:
-1. Check if numeric columns are recognized as such; convert the numeric columns to numeric before calculations.
-2. Handle NaN values by filling with mean or median. Pay special attention to dates and retrieve dates within the desired time.
-Today's date is {today}.
-Fix a numeric column that has non-numeric values with the errors='coerce' parameter, which replaces any non-numeric values with NaN.
-3. Convert all time formats to datetime format; dates should not support sum operations.
-4. Avoid naming variables with duplicate names and use the format string .2f to output numbers.
-5. Ensure the Python code is properly indented.
-6. Use a single code block for the solution. Don't add unnecessary spaces.
-7. Do not explain or comment the code. Wrap up the code in a single code block. 
-8. The DataFrame has columns: {column_names}. Use only these columns for analysis.
-9. time_on_site is in seconds. satisfaction_score and feedback_score are in range 1 to 5
-10. Output as st.write in business tone with calculated stats. Don't make up answers. Use facts in the dataframe df.
-11. Add try catch blocks to catch errors and respond error in business neutral tones
+  You are Marketing analyst who answers to CMO's business questions by using Python code from preloaded 'df' DataFrame.
+    Follow these steps:
+    1. Import pandas.
+    2. No need to reload 'df'.
+    3. Answer this query: {query}.
+    4. Generate code for accurate extraction.
+    5. Execute for results.
+    6. Present professionally.
+    
+    Key Points:
+    - Ensure numeric column recognition.
+    - Handle NaN with mean or median.
+    - Attend to dates within desired time.
+    - Fix non-numeric values.
+    - Convert time formats to datetime.
+    - Avoid duplicate variable names.
+    - Use .2f for numeric output.
+    - Maintain proper indentation.
+    - DataFrame columns: {column_names}.
+    - 'time_on_site' is numeric and is in seconds; 'satisfaction_score' and 'feedback_score' range from 1 to 5.
+    - Output using st.write.
+    - Include try-except for errors.
 
-                """
+    Today's date: {today}.
+              """
     return prompt_content
 
-def ask_follow_up(answer):
+def ask_follow_up(df,answer):
+    column_names = ",".join(df.columns)
     prompt_content = f"""
     Generate a array with list of business questions, 
-    the Chief Marketing Officer (CMO) could ask based on the provided response:
-    {answer}
+    the Chief Marketing Officer (CMO) could ask based on the following response:
+    "{answer}"
     The questions should be short and precise. Only create 3 questions. 
+    Ask questions that only use the information that following columns could provide : {column_names}. 
     Don't suggest the same questions again and again. Remove any unterminated string literal.
-    Example output format = ['q1','q2','q3']. 
+    Example output format :
+      ['What are my top revenue generating sources',
+    'Which campaign  received highest customer satisfaction score last quarter?',
+    'What is the averate time user spend on site for direct campaigns?']. 
     """
     return prompt_content
 
@@ -127,13 +141,16 @@ def start_chat(df):
         st.session_state['messages'].append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-            final_prompt = prepare_simple_prompt(prompt, df)
+            final_prompt = prepare_prompt(prompt, df)
+            #st.write(final_prompt)
         response = vertexai.generate_text(final_prompt,stream=False)
         output = exec_code(df, response)
-        followup_prompt = ask_follow_up(response)
+        st.markdown(output)
+        st.session_state['messages'].append({"role": "ai", "content": output})
+        followup_prompt = ask_follow_up(df,output)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
+        #st.markdown(followup_q)
         with st.chat_message("ai", avatar=avatar_img):
-            st.session_state['messages'].append({"role": "ai", "content": response})
             try:
                 followup_q_list = ast.literal_eval(followup_q)
                 if followup_q_list and len(followup_q_list) > 0:

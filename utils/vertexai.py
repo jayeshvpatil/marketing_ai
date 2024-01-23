@@ -19,8 +19,8 @@ def init_vertex():
 
 def get_model_config():
     return  {
-        "max_output_tokens": 1024,
-        "temperature": 0.0,
+        "max_output_tokens": 2048,
+        "temperature": 0.2,
         "top_p": 0.95,
         "top_k": 40
     }
