@@ -2,9 +2,11 @@ import vertexai
 from google.oauth2 import service_account
 import streamlit as st
 from vertexai.preview.generative_models import GenerativeModel
-from langchain_experimental.agents import create_csv_agent
 from langchain.chat_models.vertexai import ChatVertexAI
-from langchain.agents.agent_types import AgentType
+from langchain_experimental.agents import create_pandas_dataframe_agent
+from langchain.callbacks import StreamlitCallbackHandler
+from datetime import datetime
+from langchain.prompts import PromptTemplate
 
 PROJECT_ID = 'dce-gcp-training' # @param {type:"string"}
 LOCATION = 'us-central1'  # @param {type:"string"}
@@ -31,6 +33,21 @@ def get_model():
      model = GenerativeModel(MODEL_NAME)
      return model
 
+def get_chat_model():
+    chat_model = ChatVertexAI(
+    model_name=MODEL_NAME, max_output_tokens=1048, temperature=0.2
+) 
+    return chat_model
+
+def get_chat_agent(chat_model, df, max_iterations=6):
+    pd_agent = create_pandas_dataframe_agent(chat_model, 
+                         df, 
+                         verbose=True, 
+                         handle_parse_errors=True,
+                         #return_intermediate_steps=True,
+                         max_iterations=max_iterations)
+    return pd_agent
+
 def generate_text(prompt, stream=False):
     model = get_model()
     responses = model.generate_content(
@@ -50,3 +67,18 @@ def generate_text(prompt, stream=False):
     else:
         return responses.text
     
+def generate_chat_agent_response(query, df):
+    chat_model = get_chat_model()
+    st_cb = StreamlitCallbackHandler(st.container(),expand_new_thoughts=False)
+    today = datetime.today()
+    PROMPT = """
+            You are working with a pandas dataframe in Python.
+            The name of the dataframe is `df`. 
+            Remember today's date is {today} for any date relative calculations.
+            Answer final answer in a business neutral professional tone in a complete sentence. 
+            Do not make up the final answer. If you don't know, simply reply back that you are not able find the final answer and need more details.
+            Here's the query : {query}
+            """
+    prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
+    pd_agent = get_chat_agent(chat_model,df)
+    return pd_agent(prompt.format(query=query, today=today), callbacks=[st_cb])

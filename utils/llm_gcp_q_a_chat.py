@@ -63,17 +63,17 @@ def prepare_prompt(query, df):
 def ask_follow_up(df,answer):
     column_names = ",".join(df.columns)
     prompt_content = f"""
-    Generate a array with list of business questions, 
+    Always generate a array with list of business questions, 
     the Chief Marketing Officer (CMO) could ask based on the following response:
     "{answer}"
     The questions should be short and precise. Only create 3 questions. 
     Ask questions that only use the information that following columns could provide : {column_names}. 
     Don't suggest the same questions again and again. Remove any unterminated string literal.
-    Example output format :
+    Strictly follow the below shown example output format :
       ['What are my top revenue generating sources',
     'Which campaign  received highest customer satisfaction score last quarter?',
     'What is the averate time user spend on site for direct campaigns?']. 
-    """
+     """
     return prompt_content
 
 def click_follow_up_button(q):
@@ -141,18 +141,20 @@ def start_chat(df):
         st.session_state['messages'].append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
-            final_prompt = prepare_prompt(prompt, df)
+            #final_prompt = prepare_prompt(prompt, df)
             #st.write(final_prompt)
-        response = vertexai.generate_text(final_prompt,stream=False)
-        output = exec_code(df, response)
+        #response = vertexai.generate_text(final_prompt,stream=False)
+        response = vertexai.generate_chat_agent_response(prompt, df)
+        output = response['output']
         st.markdown(output)
+        #st.markdown(output)
         st.session_state['messages'].append({"role": "ai", "content": output})
         followup_prompt = ask_follow_up(df,output)
         followup_q = vertexai.generate_text(followup_prompt,stream=False)
-        #st.markdown(followup_q)
         with st.chat_message("ai", avatar=avatar_img):
             try:
                 followup_q_list = ast.literal_eval(followup_q)
+                #st.write(followup_q)
                 if followup_q_list and len(followup_q_list) > 0:
                     for q in (followup_q_list):
                         st.button(q, on_click=click_follow_up_button, args=[q])
