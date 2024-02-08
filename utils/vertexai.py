@@ -81,4 +81,4 @@ def generate_chat_agent_response(query, df):
             """
     prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
     pd_agent = get_chat_agent(chat_model,df)
-    return pd_agent(prompt.format(query=query, today=today), callbacks=[st_cb])
+    return pd_agent(prompt.format(query=query, today=today))

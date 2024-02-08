@@ -5,3 +5,4 @@ venv/
 .DS_Store
 utils/__pycache__/*
 anomalies/__pycache__/*
+.streamlit/*
