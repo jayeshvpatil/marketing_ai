@@ -43,7 +43,7 @@ def get_chat_agent(chat_model, df, max_iterations=6):
     pd_agent = create_pandas_dataframe_agent(chat_model, 
                          df, 
                          verbose=True, 
-                         agent_executor_kwargs={"handle_parsing_errors": True},
+                         handle_parse_errors= True,
                          #return_intermediate_steps=True,
                          max_iterations=max_iterations)
     return pd_agent
@@ -79,6 +79,15 @@ def generate_chat_agent_response(query, df):
             Do not make up the final answer. If you don't know, simply reply back that you are not able find the final answer and need more details.
             Here's the query : {query}
             """
-    prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
-    pd_agent = get_chat_agent(chat_model,df)
-    return pd_agent(prompt.format(query=query, today=today))
+    try:
+        prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
+        pd_agent = get_chat_agent(chat_model,df)
+        response= pd_agent(prompt.format(query=query, today=today))
+        output = response['output']
+    except Exception as e:
+        response = str(e)
+        if response.startswith("Could not parse LLM output: `"):
+            response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+            print(response)
+        output = 'I am not able to find the final answer and need more details. Please provide more context and ask precise questions'
+    return output

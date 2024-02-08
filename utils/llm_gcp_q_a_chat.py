@@ -144,8 +144,7 @@ def start_chat(df):
             #final_prompt = prepare_prompt(prompt, df)
             #st.write(final_prompt)
         #response = vertexai.generate_text(final_prompt,stream=False)
-        response = vertexai.generate_chat_agent_response(prompt, df)
-        output = response['output']
+        output = vertexai.generate_chat_agent_response(prompt, df)
         st.markdown(output)
         #st.markdown(output)
         st.session_state['messages'].append({"role": "ai", "content": output})
