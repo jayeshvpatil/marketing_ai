@@ -43,7 +43,7 @@ def get_chat_agent(chat_model, df, max_iterations=6):
     pd_agent = create_pandas_dataframe_agent(chat_model, 
                          df, 
                          verbose=True, 
-                         handle_parse_errors=True,
+                         agent_executor_kwargs={"handle_parsing_errors": True},
                          #return_intermediate_steps=True,
                          max_iterations=max_iterations)
     return pd_agent
