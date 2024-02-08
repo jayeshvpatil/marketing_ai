@@ -26,6 +26,7 @@ def set_page_config():
     )
     st.markdown("<style> footer {visibility: hidden;} </style>", unsafe_allow_html=True)
 
+
 init_vertex()
 set_page_config()
 
