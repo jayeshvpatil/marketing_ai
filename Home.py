@@ -12,7 +12,7 @@ LOCATION = 'us-central1'  # @param {type:"string"}
 # Set page config
 def init_vertex():
     credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcs_connections"]
+    st.secrets["gcs_connection"]
     )
     vertexai.init(project=PROJECT_ID, location=LOCATION, credentials=credentials)
 
