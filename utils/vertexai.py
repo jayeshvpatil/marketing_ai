@@ -80,9 +80,16 @@ def generate_chat_agent_response(query, df):
             Here's the query : {query}
             """
    
-    prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
-    pd_agent = get_chat_agent(chat_model,df)
-    response= pd_agent(prompt.format(query=query, today=today))
-    print(response)
-    output = response['output']
+    try:
+        prompt = PromptTemplate(template=PROMPT, input_variables=["query", "today"])
+        pd_agent = get_chat_agent(chat_model,df)
+        response= pd_agent(prompt.format(query=query, today=today))
+        output = response['output']
+    except Exception as e:
+        response = str(e)
+        print(response)
+        if response.startswith("Could not parse LLM output: `"):
+            response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+            print(response)
+        output = 'I am not able to find the final answer and need more details. Please provide more context and ask precise questions'
     return output

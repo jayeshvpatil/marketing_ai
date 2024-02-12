@@ -2,8 +2,9 @@ streamlit==1.30.0
 pandas
 plotly
 pandasai
-langchain
-langchain_experimental
+langchain==0.1.3
+langchain-core==0.1.15
+langchain-experimental==0.0.49
 langchain_openai
 tabulate
 openai
@@ -12,7 +13,6 @@ pygwalker
 faker
 google-cloud-aiplatform
 streamlit_chat
-langchain-core
 streamlit_extras
 scikit-learn
 langchain-community
