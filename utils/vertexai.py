@@ -86,7 +86,7 @@ def generate_chat_agent_response(query, df):
         output = response['output']
     except Exception as e:
         response = str(e)
-        #st.write(response)
+        print(response)
         if response.startswith("Could not parse LLM output: `"):
             response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
             print(response)
