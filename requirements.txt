@@ -15,3 +15,4 @@ streamlit_chat
 langchain-core
 streamlit_extras
 scikit-learn
+langchain-community
